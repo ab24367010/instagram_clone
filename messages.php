@@ -12,24 +12,34 @@ $user_id = $_SESSION['user_id'];
 $stmt = $pdo->prepare("
     SELECT DISTINCT u.id, u.username, u.profile_picture_url,
            (SELECT message_text FROM messages 
-            WHERE (sender_id = u.id AND receiver_id = :user_id) 
-               OR (sender_id = :user_id AND receiver_id = u.id)
+            WHERE (sender_id = u.id AND receiver_id = :uid1) 
+               OR (sender_id = :uid2 AND receiver_id = u.id)
             ORDER BY created_at DESC LIMIT 1) as last_message,
            (SELECT created_at FROM messages 
-            WHERE (sender_id = u.id AND receiver_id = :user_id) 
-               OR (sender_id = :user_id AND receiver_id = u.id)
+            WHERE (sender_id = u.id AND receiver_id = :uid3) 
+               OR (sender_id = :uid4 AND receiver_id = u.id)
             ORDER BY created_at DESC LIMIT 1) as last_message_time
     FROM users u
     WHERE u.id IN (
-        SELECT DISTINCT sender_id FROM messages WHERE receiver_id = :user_id
+        SELECT DISTINCT sender_id FROM messages WHERE receiver_id = :uid5
         UNION
-        SELECT DISTINCT receiver_id FROM messages WHERE sender_id = :user_id
+        SELECT DISTINCT receiver_id FROM messages WHERE sender_id = :uid6
     )
-    AND u.id != :user_id
+    AND u.id != :uid7
     ORDER BY last_message_time DESC
 ");
-$stmt->execute(['user_id' => $user_id]);
+
+$stmt->execute([
+    ':uid1' => $user_id,
+    ':uid2' => $user_id,
+    ':uid3' => $user_id,
+    ':uid4' => $user_id,
+    ':uid5' => $user_id,
+    ':uid6' => $user_id,
+    ':uid7' => $user_id
+]);
 $conversations = $stmt->fetchAll();
+
 ?>
 
 <!DOCTYPE html>
