@@ -1,5 +1,7 @@
 <?php
 session_start();
+require_once __DIR__ . '/includes/database.php';
+
 if (!isset($_SESSION['user_id'])) {
     header("Location: auth/login.php");
     exit;
@@ -131,7 +133,7 @@ $conversations = $stmt->fetchAll();
             }
             
             try {
-                const response = await fetch(`api/search_users.php?q=${encodeURIComponent(query)}`);
+                const response = await fetch(`api/search_user.php?q=${encodeURIComponent(query)}`);
                 const users = await response.json();
                 
                 resultsContainer.innerHTML = '';
