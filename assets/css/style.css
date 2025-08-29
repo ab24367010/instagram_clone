@@ -426,7 +426,7 @@ main {
 /* Profile page */
 .profile-container {
     max-width: 935px;
-    margin: 0 auto;
+    margin: 60px auto;
     padding: 30px 20px;
 }
 
@@ -506,7 +506,7 @@ main {
 /* Settings page */
 .settings-container {
     max-width: 600px;
-    margin: 0 auto;
+    margin: 60px auto;
     padding: 30px 20px;
 }
 
@@ -609,7 +609,7 @@ main {
 /* Messages */
 .chat-container {
     max-width: 935px;
-    margin: 0 auto;
+    margin: 60px auto;
     padding: 30px 20px;
 }
 
