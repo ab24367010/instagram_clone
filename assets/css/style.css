@@ -1,0 +1,112 @@
+/* assets/css/style.css
+   Simple, clean Instagram-like styles
+   Save this file and make sure pages link to it:
+   <link rel="stylesheet" href="assets/css/style.css">
+*/
+
+/* Reset-ish */
+* { box-sizing: border-box; }
+html,body { height: 100%; margin: 0; padding: 0; font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif; color: #222; background: #fafafa; }
+
+/* Header / nav */
+header {
+  background: #fff;
+  border-bottom: 1px solid #e6e6e6;
+  padding: 12px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+header h1 { display: inline-block; margin: 0; font-size: 1.1rem; color: #111; }
+header nav { display: inline-block; margin-left: 18px; font-size: 0.95rem; vertical-align: middle; }
+header nav a { color: #333; text-decoration: none; margin-right: 10px; }
+header nav a:hover { text-decoration: underline; }
+
+/* Layout */
+.feed-container, .settings-container, .explore-container {
+  max-width: 900px;
+  margin: 22px auto;
+  padding: 0 12px;
+}
+
+/* Search / Follow */
+.search-follow { background: #fff; border: 1px solid #e9e9e9; padding: 12px; border-radius: 8px; margin-bottom: 18px; }
+.search-follow form { display: flex; gap: 8px; align-items:center; }
+.search-follow input[type="text"] { flex: 1; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; }
+.search-follow button { padding: 8px 12px; background: #0095f6; color: #fff; border: none; border-radius: 6px; cursor: pointer; }
+.search-follow button:hover { opacity: .95; }
+
+.search-results ul { list-style: none; padding: 0; margin: 10px 0 0 0; }
+.search-results li { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom: 1px dashed #f0f0f0; }
+.search-results .avatar-small { width:40px; height:40px; border-radius:50%; object-fit:cover; }
+
+/* Post card */
+.post {
+  background: #fff;
+  border: 1px solid #e9e9e9;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.02);
+}
+.post-user { display:flex; align-items:center; gap:10px; padding:10px 12px; }
+.avatar-small { width:44px; height:44px; border-radius:50%; object-fit:cover; }
+.avatar-large { width:90px; height:90px; border-radius:50%; object-fit:cover; }
+.post-image { display:block; width:100%; max-height:600px; object-fit:contain; background:#111; }
+
+/* Caption / meta */
+.post p { padding: 10px 12px; margin:0; line-height:1.4; color:#222; }
+.post .post-actions { padding: 8px 12px; display:flex; gap:8px; align-items:center; }
+
+/* Buttons */
+button { cursor: pointer; font-family: inherit; }
+.like-form button,
+.follow-form button,
+.comment-form button,
+.search-follow button {
+  background: #fff;
+  border: 1px solid #ddd;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+.like-form button:hover,
+.follow-form button:hover { background:#f6f6f6; }
+
+/* Comments */
+.comments { padding: 8px 12px; border-top: 1px solid #f3f3f3; }
+.comment { margin-bottom:6px; font-size:0.95rem; }
+.comment strong { margin-right:6px; }
+
+/* Add comment */
+.comment-form { display:flex; gap:8px; padding: 8px 12px; border-top: 1px solid #f7f7f7; }
+.comment-form input[type="text"] { flex:1; padding:8px; border:1px solid #eee; border-radius:6px; }
+
+/* Settings / forms */
+.settings-container { max-width:700px; }
+.settings-container form { background:#fff; padding:12px; border-radius:8px; border:1px solid #eaeaea; margin-bottom:12px; }
+.settings-container label { display:block; margin:8px 0 6px; font-weight:600; font-size:.95rem; }
+.settings-container input[type="text"],
+.settings-container input[type="email"],
+.settings-container input[type="password"],
+.settings-container textarea { width:100%; padding:10px; border:1px solid #e6e6e6; border-radius:6px; }
+.settings-container .avatar-small { width:60px; height:60px; margin-top:8px; }
+
+/* Messages / Chat */
+.chat-container { max-width:900px; margin:20px auto; padding:0 12px; }
+.chat-messages { background:#fff; border:1px solid #eaeaea; padding:12px; border-radius:8px; min-height:300px; overflow:auto; }
+.chat-message { padding:8px; border-bottom:1px solid #f0f0f0; }
+
+/* Utilities */
+.error { background:#ffecec; color:#d8000c; padding:8px 10px; border-radius:6px; margin-bottom:10px; }
+.success { background:#edf7ed; color:#2d7a2d; padding:8px 10px; border-radius:6px; margin-bottom:10px; }
+
+/* Responsive */
+@media (min-width: 1000px) {
+  .feed-container { display:grid; grid-template-columns: 1fr 360px; gap: 18px; align-items:start; }
+  main.feed-container { margin-top: 24px; }
+  .search-follow { grid-column: 2 / 3; position: sticky; top: 80px; }
+}
+@media (max-width:999px) {
+  header nav { display:block; margin-top:8px; }
+  .feed-container, .settings-container { padding: 0 16px; }
+}
