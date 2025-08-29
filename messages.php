@@ -167,44 +167,53 @@ $conversations = $stmt->fetchAll();
         });
 
         async function loadChat(userId, username) {
-            currentChatUser = userId;
-            
-            document.getElementById('chat-header').textContent = username;
-            document.getElementById('chat-input-container').style.display = 'block';
-            
-            try {
-                const response = await fetch(`api/messages.php?user_id=${userId}`);
-                const messages = await response.json();
-                const container = document.getElementById('chat-messages');
-                
-                container.innerHTML = '';
-                
-                if (messages.length === 0) {
-                    container.innerHTML = '<div style="text-align: center; padding: 40px; color: #8e8e8e;">No messages yet. Say hello!</div>';
-                } else {
-                    messages.forEach(msg => {
-                        const div = document.createElement('div');
-                        div.classList.add('chat-message');
-                        const isOwn = msg.sender_id == <?php echo $user_id; ?>;
-                        div.style.textAlign = isOwn ? 'right' : 'left';
-                        div.innerHTML = `
-                            <div style="display: inline-block; max-width: 70%; padding: 8px 12px; border-radius: 18px; background: ${isOwn ? '#0095f6' : '#efefef'}; color: ${isOwn ? 'white' : '#262626'};">
-                                ${msg.message_text}
-                            </div>
-                            <div style="font-size: 11px; color: #8e8e8e; margin-top: 4px;">
-                                ${new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                            </div>
-                        `;
-                        container.appendChild(div);
-                    });
-                    
-                    // Scroll to bottom
-                    container.scrollTop = container.scrollHeight;
-                }
-            } catch (error) {
-                console.error('Error loading messages:', error);
-            }
+    currentChatUser = userId;
+    
+    document.getElementById('chat-header').textContent = username;
+    document.getElementById('chat-input-container').style.display = 'block';
+    
+    try {
+        const response = await fetch(`api/messages.php?user_id=${userId}`);
+        const messages = await response.json();
+        const container = document.getElementById('chat-messages');
+        
+        container.innerHTML = '';
+        
+        if (!Array.isArray(messages)) {
+            console.error('Server returned error:', messages);
+            container.innerHTML = `<div style="color:red; text-align:center; padding:20px;">
+                Error loading messages: ${messages.error || 'Unknown error'}
+            </div>`;
+            return;
         }
+        
+        if (messages.length === 0) {
+            container.innerHTML = '<div style="text-align: center; padding: 40px; color: #8e8e8e;">No messages yet. Say hello!</div>';
+        } else {
+            messages.forEach(msg => {
+                const div = document.createElement('div');
+                div.classList.add('chat-message');
+                const isOwn = msg.sender_id == <?php echo $user_id; ?>;
+                div.style.textAlign = isOwn ? 'right' : 'left';
+                div.innerHTML = `
+                    <div style="display: inline-block; max-width: 70%; padding: 8px 12px; border-radius: 18px; background: ${isOwn ? '#0095f6' : '#efefef'}; color: ${isOwn ? 'white' : '#262626'};">
+                        ${msg.message_text}
+                    </div>
+                    <div style="font-size: 11px; color: #8e8e8e; margin-top: 4px;">
+                        ${new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+            
+            // Scroll to bottom
+            container.scrollTop = container.scrollHeight;
+        }
+    } catch (error) {
+        console.error('Error loading messages:', error);
+    }
+}
+
 
         async function sendMessage(event) {
             event.preventDefault();
