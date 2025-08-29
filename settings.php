@@ -2,7 +2,6 @@
 session_start();
 require_once __DIR__ . '/includes/database.php';
 
-// Session check
 if (!isset($_SESSION['user_id'])) {
     header("Location: auth/login.php");
     exit;
@@ -13,7 +12,7 @@ $error = '';
 $success = '';
 
 // Fetch current user info
-$stmt = $pdo->prepare("SELECT username, full_name, bio, profile_picture_url FROM users WHERE id = :id LIMIT 1");
+$stmt = $pdo->prepare("SELECT username, email, full_name, bio, profile_picture_url FROM users WHERE id = :id LIMIT 1");
 $stmt->execute(['id' => $user_id]);
 $user = $stmt->fetch();
 
@@ -24,19 +23,21 @@ if (isset($_POST['update_profile'])) {
     $bio = trim($_POST['bio']);
 
     if (empty($new_username)) {
-        $error = "Username хоосон байж болохгүй.";
+        $error = "Username cannot be empty.";
     } else {
         // Check username uniqueness
         $stmt = $pdo->prepare("SELECT id FROM users WHERE username = :username AND id != :id LIMIT 1");
         $stmt->execute(['username' => $new_username, 'id' => $user_id]);
         if ($stmt->fetch()) {
-            $error = "Username аль хэдийн ашиглагдаж байна.";
+            $error = "Username is already taken.";
         } else {
-            // Profile picture upload
+            // Handle profile picture upload
             $profile_picture_url = $user['profile_picture_url'];
             if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] == 0) {
                 $target_dir = __DIR__ . "/assets/uploads/";
-                if (!is_dir($target_dir)) mkdir($target_dir, 0755, true);
+                if (!is_dir($target_dir)) {
+                    mkdir($target_dir, 0755, true);
+                }
 
                 $filename = uniqid() . '_' . basename($_FILES["profile_picture"]["name"]);
                 $target_file = $target_dir . $filename;
@@ -47,10 +48,10 @@ if (isset($_POST['update_profile'])) {
                     if (move_uploaded_file($_FILES["profile_picture"]["tmp_name"], $target_file)) {
                         $profile_picture_url = "assets/uploads/$filename";
                     } else {
-                        $error = "Зураг хадгалах явцад алдаа гарлаа.";
+                        $error = "Error uploading profile picture.";
                     }
                 } else {
-                    $error = "Зөвхөн JPG, PNG, GIF зураг оруулж болно.";
+                    $error = "Only JPG, PNG, and GIF files are allowed.";
                 }
             }
 
@@ -64,7 +65,9 @@ if (isset($_POST['update_profile'])) {
                     'id' => $user_id
                 ]);
                 $_SESSION['username'] = $new_username;
-                $success = "Profile амжилттай шинэчлэгдлээ.";
+                $success = "Profile updated successfully.";
+                
+                // Update user array for display
                 $user['username'] = $new_username;
                 $user['full_name'] = $full_name;
                 $user['bio'] = $bio;
@@ -81,9 +84,11 @@ if (isset($_POST['change_password'])) {
     $confirm_password = $_POST['confirm_password'];
 
     if (empty($current_password) || empty($new_password) || empty($confirm_password)) {
-        $error = "Бүх нууц үгийн талбарыг бөглөнө үү.";
+        $error = "Please fill in all password fields.";
     } elseif ($new_password !== $confirm_password) {
-        $error = "Шинэ нууц үг таарахгүй байна.";
+        $error = "New passwords don't match.";
+    } elseif (strlen($new_password) < 6) {
+        $error = "New password must be at least 6 characters long.";
     } else {
         $stmt = $pdo->prepare("SELECT password_hash FROM users WHERE id = :id LIMIT 1");
         $stmt->execute(['id' => $user_id]);
@@ -93,9 +98,9 @@ if (isset($_POST['change_password'])) {
             $new_hash = password_hash($new_password, PASSWORD_DEFAULT);
             $stmt = $pdo->prepare("UPDATE users SET password_hash = :password_hash WHERE id = :id");
             $stmt->execute(['password_hash' => $new_hash, 'id' => $user_id]);
-            $success = "Нууц үг амжилттай солигдлоо.";
+            $success = "Password changed successfully.";
         } else {
-            $error = "Хуучин нууц үг буруу байна.";
+            $error = "Current password is incorrect.";
         }
     }
 }
@@ -105,60 +110,84 @@ if (isset($_POST['change_password'])) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Settings - Instagram Clone</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile • Instagram</title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
-<header>
-    <h1>Settings</h1>
-    <nav>
-        <a href="index.php">Feed</a> |
-        <a href="profile.php">Profile</a> |
-        <a href="auth/logout.php">Logout</a>
-    </nav>
-</header>
+    <header>
+        <div class="header-content">
+            <a href="index.php" class="logo">Instagram</a>
+            <nav class="nav-links">
+                <a href="index.php">Home</a>
+                <a href="explore.php">Explore</a>
+                <a href="profile.php">Profile</a>
+                <a href="messages.php">Messages</a>
+                <a href="settings.php">Settings</a>
+                <a href="auth/logout.php">Logout</a>
+            </nav>
+        </div>
+    </header>
 
-<main class="settings-container">
-    <?php if ($error) echo "<div class='error'>$error</div>"; ?>
-    <?php if ($success) echo "<div class='success'>$success</div>"; ?>
+    <main class="settings-container">
+        <?php if ($error): ?>
+            <div class="error"><?php echo htmlspecialchars($error); ?></div>
+        <?php endif; ?>
+        <?php if ($success): ?>
+            <div class="success"><?php echo htmlspecialchars($success); ?></div>
+        <?php endif; ?>
 
-    <section>
-        <h2>Profile Settings</h2>
-        <form method="post" enctype="multipart/form-data">
-            <label>Username</label>
-            <input type="text" name="username" value="<?php echo htmlspecialchars($user['username']); ?>" required>
+        <div class="settings-form">
+            <h2>Edit Profile</h2>
+            <form method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label>Profile Photo</label>
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <img src="<?php echo htmlspecialchars($user['profile_picture_url']); ?>" class="avatar-small" alt="Current avatar">
+                        <input type="file" name="profile_picture" accept="image/*">
+                    </div>
+                </div>
 
-            <label>Full Name</label>
-            <input type="text" name="full_name" value="<?php echo htmlspecialchars($user['full_name']); ?>">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" name="username" value="<?php echo htmlspecialchars($user['username']); ?>" required>
+                </div>
 
-            <label>Bio</label>
-            <textarea name="bio"><?php echo htmlspecialchars($user['bio']); ?></textarea>
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" name="full_name" value="<?php echo htmlspecialchars($user['full_name'] ?? ''); ?>">
+                </div>
 
-            <label>Profile Picture</label>
-            <input type="file" name="profile_picture">
-            <?php if ($user['profile_picture_url']): ?>
-                <img src="<?php echo $user['profile_picture_url']; ?>" alt="avatar" class="avatar-small">
-            <?php endif; ?>
+                <div class="form-group">
+                    <label>Bio</label>
+                    <textarea name="bio" placeholder="Tell us about yourself..."><?php echo htmlspecialchars($user['bio'] ?? ''); ?></textarea>
+                </div>
 
-            <button type="submit" name="update_profile">Update Profile</button>
-        </form>
-    </section>
+                <button type="submit" name="update_profile" class="btn-primary">Submit</button>
+            </form>
+        </div>
 
-    <section>
-        <h2>Change Password</h2>
-        <form method="post">
-            <label>Current Password</label>
-            <input type="password" name="current_password" required>
+        <div class="settings-form">
+            <h2>Change Password</h2>
+            <form method="post">
+                <div class="form-group">
+                    <label>Old Password</label>
+                    <input type="password" name="current_password" required>
+                </div>
 
-            <label>New Password</label>
-            <input type="password" name="new_password" required>
+                <div class="form-group">
+                    <label>New Password</label>
+                    <input type="password" name="new_password" required>
+                </div>
 
-            <label>Confirm New Password</label>
-            <input type="password" name="confirm_password" required>
+                <div class="form-group">
+                    <label>Confirm New Password</label>
+                    <input type="password" name="confirm_password" required>
+                </div>
 
-            <button type="submit" name="change_password">Change Password</button>
-        </form>
-    </section>
-</main>
+                <button type="submit" name="change_password" class="btn-primary">Change Password</button>
+            </form>
+        </div>
+    </main>
 </body>
 </html>
